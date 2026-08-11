@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750">
+  <rect width="600" height="750" fill="#f4f4f4"/>
+  <rect x="90" y="90" width="420" height="420" fill="#fff"/>
+  <g fill="#111">
+    <rect x="126" y="126" width="96" height="96"/>
+    <rect x="378" y="126" width="96" height="96"/>
+    <rect x="126" y="378" width="96" height="96"/>
+    <rect x="264" y="150" width="42" height="42"/>
+    <rect x="306" y="192" width="42" height="42"/>
+    <rect x="252" y="276" width="84" height="42"/>
+    <rect x="372" y="276" width="42" height="84"/>
+    <rect x="264" y="390" width="42" height="42"/>
+    <rect x="330" y="414" width="84" height="42"/>
+    <rect x="438" y="390" width="36" height="84"/>
+  </g>
+  <text x="300" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="38" fill="#111">WeChat QR</text>
+  <text x="300" y="642" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#999">Replace with your QR code</text>
+</svg>
