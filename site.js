@@ -5,18 +5,32 @@
     return;
   }
 
+  let framePending = false;
+
   const syncFramerHeroState = () => {
+    framePending = false;
     const revealAfter = 80;
+    const bounds = framerHero.getBoundingClientRect();
 
     document.body.classList.toggle(
       "framer-at-top",
-      framerHero.getBoundingClientRect().top > -revealAfter
+      bounds.top > -revealAfter
     );
+    document.body.classList.toggle("framer-hero-offscreen", bounds.bottom <= 0);
+  };
+
+  const requestFramerHeroSync = () => {
+    if (framePending) {
+      return;
+    }
+
+    framePending = true;
+    window.requestAnimationFrame(syncFramerHeroState);
   };
 
   syncFramerHeroState();
-  window.addEventListener("scroll", syncFramerHeroState, { passive: true });
-  window.addEventListener("resize", syncFramerHeroState);
+  window.addEventListener("scroll", requestFramerHeroSync, { passive: true });
+  window.addEventListener("resize", requestFramerHeroSync);
 })();
 
 (function () {
@@ -115,6 +129,16 @@
     }
   };
 
+  const prepareVideo = (video) => {
+    if (video.dataset.mediaReady === "true") {
+      return;
+    }
+
+    video.dataset.mediaReady = "true";
+    video.preload = "metadata";
+    video.load();
+  };
+
   videos.forEach((video) => {
     const cleanSeekbar = video.dataset.cleanSeekbar === "true";
 
@@ -128,49 +152,26 @@
     }
 
     video.setAttribute("playsinline", "");
+    video.removeAttribute("autoplay");
+    video.preload = "none";
 
     const silentAutoplay = video.dataset.silentAutoplay === "true";
-    const playOnView = video.dataset.playOnView === "true";
+    const playOnView =
+      video.dataset.playOnView === "true" ||
+      video.dataset.autoplayOnView === "true" ||
+      silentAutoplay;
+
+    if (playOnView) {
+      viewTriggeredVideos.push(video);
+      video.pause();
+    }
 
     if (silentAutoplay) {
-      if (playOnView) {
-        viewTriggeredVideos.push(video);
-      }
-
       video.muted = true;
       video.defaultMuted = true;
       video.setAttribute("muted", "");
       video.setAttribute("playsinline", "");
       video.removeAttribute("poster");
-
-      const playSilently = () => {
-        video.muted = true;
-        video.defaultMuted = true;
-        video.play().catch(() => {});
-      };
-
-      if (!playOnView) {
-        playSilently();
-      }
-
-      video.addEventListener("canplay", () => {
-        if (!playOnView) {
-          playSilently();
-        }
-      });
-
-      video.addEventListener("loadeddata", () => {
-        if (!playOnView) {
-          playSilently();
-        }
-      });
-
-      document.addEventListener("visibilitychange", () => {
-        if (!document.hidden && !playOnView) {
-          playSilently();
-        }
-      });
-
       return;
     }
 
@@ -180,12 +181,6 @@
     video.volume = 1;
     video.removeAttribute("muted");
 
-    if (playOnView) {
-      video.pause();
-      video.removeAttribute("autoplay");
-      viewTriggeredVideos.push(video);
-    }
-
     video.addEventListener("play", () => {
       pauseOtherAudibleVideos(video);
       video.muted = false;
@@ -194,16 +189,51 @@
     });
   });
 
-  if (!("IntersectionObserver" in window) || viewTriggeredVideos.length === 0) {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      videos.forEach((video) => video.pause());
+    }
+  });
+  window.addEventListener("pagehide", () => {
+    videos.forEach((video) => video.pause());
+  });
+
+  if (!("IntersectionObserver" in window)) {
+    videos.forEach(prepareVideo);
     return;
   }
 
-  const observer = new IntersectionObserver(
+  const loadObserver = new IntersectionObserver(
+    (entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          return;
+        }
+
+        prepareVideo(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    {
+      rootMargin: "700px 0px",
+      threshold: 0,
+    }
+  );
+
+  videos.forEach((video) => loadObserver.observe(video));
+
+  if (viewTriggeredVideos.length === 0) {
+    return;
+  }
+
+  const playObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         const video = entry.target;
 
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.45) {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.28) {
+          prepareVideo(video);
+
           if (video.dataset.silentAutoplay === "true") {
             video.muted = true;
             video.defaultMuted = true;
@@ -219,9 +249,9 @@
       });
     },
     {
-      threshold: [0, 0.45, 0.75],
+      threshold: [0, 0.28, 0.6],
     }
   );
 
-  viewTriggeredVideos.forEach((video) => observer.observe(video));
+  viewTriggeredVideos.forEach((video) => playObserver.observe(video));
 })();
