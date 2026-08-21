@@ -63,21 +63,17 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .side-panel::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  display: none !important;
 }
 
-.side-panel::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.side-panel::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 999px;
-}
-
-.side-panel::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.36);
+.side-panel::-webkit-scrollbar-track,
+.side-panel::-webkit-scrollbar-thumb,
+.side-panel::-webkit-scrollbar-corner {
+  display: none !important;
+  background: transparent !important;
 }
 
 a {
@@ -209,8 +205,9 @@ body.framer-at-top .side-panel {
   touch-action: pan-y;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  scrollbar-gutter: auto !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
   background: #fff;
   transition: opacity 180ms ease;
 }
@@ -740,6 +737,7 @@ body.framer-hero-offscreen .framer-hero iframe {
   display: none;
 }
 
+
 @media (max-width: 1180px) {
   body {
     background: #fff;
@@ -1015,4 +1013,20 @@ body.framer-hero-offscreen .framer-hero iframe {
   .back-to-top {
     margin-bottom: 2.4rem;
   }
+}
+/* Keep the brand-guidelines cover aligned with the project content column. */
+.project-gallery:has(> img[src="./assets/brand-book-upgrade/1.jpg"]) {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: clip !important;
+}
+
+.project-gallery > img[src="./assets/brand-book-upgrade/1.jpg"] {
+  display: block;
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  margin-inline: 0 !important;
 }
