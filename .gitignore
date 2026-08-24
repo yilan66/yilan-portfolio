@@ -1,3 +1,9 @@
 .DS_Store
+Thumbs.db
 .openai/
 tmp-watermark-check/
+
+# Local backup files created during optimization
+*-backup.*
+*-backup/
+
