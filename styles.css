@@ -272,15 +272,55 @@ body.framer-hero-offscreen .framer-hero iframe {
   visibility: hidden;
 }
 
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.5rem 1.1rem;
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 0.85rem;
+  line-height: 1;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(8px);
+  border-radius: 999px;
+  pointer-events: auto;
+}
+
+.hero-scroll-arrow {
+  font-size: 1.1rem;
+  animation: hero-scroll-bounce 1.6s infinite ease-in-out;
+}
+
+@keyframes hero-scroll-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
 @media (hover: none), (pointer: coarse) {
+  .hero-scroll-hint {
+    display: flex;
+  }
+
   .framer-hero,
   .framer-hero iframe {
     touch-action: pan-y;
   }
 
-  .framer-hero,
-  .framer-hero iframe {
-    pointer-events: none;
+  .framer-hero {
+    height: 88svh;
+    min-height: 560px;
   }
 }
 
@@ -786,8 +826,8 @@ body.framer-hero-offscreen .framer-hero iframe {
   }
 
   .framer-hero {
-    height: 92svh;
-    min-height: 640px;
+    height: 88svh;
+    min-height: 560px;
   }
 
   .about-grid,
