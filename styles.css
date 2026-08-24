@@ -503,7 +503,7 @@ body.framer-hero-offscreen .framer-hero iframe {
   position: absolute;
   inset: -2.5rem;
   content: "";
-  background: url("./assets/youdian-dongxi-conference/video-bg.png") center / cover no-repeat;
+  background: url("./assets/youdian-dongxi-conference/video-bg.webp") center / cover no-repeat;
   filter: blur(9px);
   opacity: 1;
   transform: scale(1.06);
@@ -1015,18 +1015,36 @@ body.framer-hero-offscreen .framer-hero iframe {
   }
 }
 /* Keep the brand-guidelines cover aligned with the project content column. */
-.project-gallery:has(> img[src="./assets/brand-book-upgrade/1.jpg"]) {
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow-x: clip !important;
+.project-gallery.brand-book-gallery {
+  width: 100%;
+  max-width: 58vw;
+  overflow-x: clip;
 }
 
-.project-gallery > img[src="./assets/brand-book-upgrade/1.jpg"] {
+.project-gallery.brand-book-gallery > img:first-child {
   display: block;
   box-sizing: border-box;
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  height: auto !important;
-  margin-inline: 0 !important;
+  width: 100%;
+  max-width: 58vw;
+  min-width: 0;
+  height: auto;
+  margin-inline: 0;
+}
+
+/* Lazy loading skeleton placeholders */
+.project-gallery img,
+.project-gallery video {
+  background-color: #f0f0f0;
+}
+
+.project-gallery img.is-loading,
+.project-gallery video.is-loading {
+  opacity: 0.65;
+}
+
+.project-gallery img.is-loaded,
+.project-gallery video.is-loaded {
+  opacity: 1;
+  background-color: transparent;
+  transition: opacity 0.25s ease, background-color 0.25s ease;
 }

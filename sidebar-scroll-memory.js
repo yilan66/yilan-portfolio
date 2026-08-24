@@ -31,6 +31,7 @@
 
   function findSidebar() {
     var selectors = [
+      ".side-panel",
       ".portfolio-sidebar",
       ".work-sidebar",
       ".left-sidebar",
@@ -91,15 +92,24 @@
         }
       }
 
-      if (frame) return;
-      frame = window.requestAnimationFrame(function () {
-        frame = 0;
+      function persist() {
         try {
           window.sessionStorage.setItem(
             storageKey,
             JSON.stringify({ top: sidebar.scrollTop })
           );
         } catch (error) {}
+      }
+
+      if (event && (event.type === "click" || event.type === "pagehide")) {
+        persist();
+        return;
+      }
+
+      if (frame) return;
+      frame = window.requestAnimationFrame(function () {
+        frame = 0;
+        persist();
       });
     }
 

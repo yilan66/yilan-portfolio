@@ -37,6 +37,7 @@
   const videos = Array.from(document.querySelectorAll("video"));
   const audibleVideos = [];
   const viewTriggeredVideos = [];
+  let userInteracted = false;
   let audioContext;
   const boostedVideos = new WeakSet();
 
@@ -238,11 +239,32 @@
             video.muted = true;
             video.defaultMuted = true;
             video.setAttribute("muted", "");
-          } else {
-            pauseOtherAudibleVideos(video);
+            video.play().catch(() => {});
+            return;
           }
 
-          video.play().catch(() => {});
+          pauseOtherAudibleVideos(video);
+
+          const tryPlay = () => {
+            const playPromise = video.play();
+            if (playPromise === undefined) {
+              return;
+            }
+            playPromise.catch(() => {
+              if (!audibleVideos.includes(video)) {
+                return;
+              }
+              video.muted = true;
+              video.play().catch(() => {});
+            });
+          };
+
+          if (userInteracted) {
+            video.muted = false;
+            video.volume = 1;
+          }
+
+          tryPlay();
         } else {
           video.pause();
         }
@@ -254,4 +276,65 @@
   );
 
   viewTriggeredVideos.forEach((video) => playObserver.observe(video));
+
+  const unlockAudio = () => {
+    if (userInteracted) {
+      return;
+    }
+    userInteracted = true;
+    audibleVideos.forEach((v) => {
+      v.muted = false;
+      v.defaultMuted = false;
+      v.volume = 1;
+      v.removeAttribute("muted");
+      if (!v.paused) {
+        v.play().catch(() => {});
+      }
+    });
+  };
+
+  ["click", "pointerdown", "keydown", "touchstart"].forEach((eventName) => {
+    document.addEventListener(eventName, unlockAudio, { once: true, passive: true });
+  });
+})();
+
+(function () {
+  // Prioritize the first visible media in each project gallery (LCP).
+  document.querySelectorAll(".project-gallery").forEach((gallery) => {
+    const firstMedia = gallery.querySelector("img, video");
+    if (!firstMedia) {
+      return;
+    }
+    firstMedia.setAttribute("loading", "eager");
+    firstMedia.setAttribute("fetchpriority", "high");
+    if (firstMedia.tagName === "VIDEO") {
+      firstMedia.setAttribute("preload", "metadata");
+    }
+  });
+
+  // Skeleton placeholder: fade in media once it finishes loading.
+  const markLoaded = (media) => {
+    media.classList.remove("is-loading");
+    media.classList.add("is-loaded");
+  };
+
+  document.querySelectorAll(".project-gallery img").forEach((img) => {
+    img.classList.add("is-loading");
+    if (img.complete) {
+      markLoaded(img);
+    } else {
+      img.addEventListener("load", () => markLoaded(img), { once: true });
+      img.addEventListener("error", () => markLoaded(img), { once: true });
+    }
+  });
+
+  document.querySelectorAll(".project-gallery video").forEach((video) => {
+    video.classList.add("is-loading");
+    if (video.readyState >= 2) {
+      markLoaded(video);
+    } else {
+      video.addEventListener("loadeddata", () => markLoaded(video), { once: true });
+      video.addEventListener("error", () => markLoaded(video), { once: true });
+    }
+  });
 })();
