@@ -278,6 +278,7 @@ body.framer-hero-offscreen .framer-hero iframe {
     touch-action: pan-y;
   }
 
+  .framer-hero,
   .framer-hero iframe {
     pointer-events: none;
   }
