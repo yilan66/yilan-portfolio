@@ -34,6 +34,19 @@
 })();
 
 (function () {
+  const isMobileDevice =
+    window.matchMedia("(pointer: coarse)").matches ||
+    window.matchMedia("(hover: none)").matches ||
+    window.innerWidth < 768;
+
+  if (isMobileDevice) {
+    document.querySelectorAll("video[data-mobile-src]").forEach((video) => {
+      if (video.dataset.mobileSrc) {
+        video.src = video.dataset.mobileSrc;
+      }
+    });
+  }
+
   const videos = Array.from(document.querySelectorAll("video"));
   const audibleVideos = [];
   const viewTriggeredVideos = [];
