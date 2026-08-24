@@ -1052,6 +1052,10 @@ body.framer-hero-offscreen .framer-hero iframe {
 
 /* Silent autoplay videos should not show native controls overlay. */
 video[data-silent-autoplay="true"]::-webkit-media-controls,
-video[data-silent-autoplay="true"]::-webkit-media-controls-enclosure {
+video[data-silent-autoplay="true"]::-webkit-media-controls-enclosure,
+video[data-silent-autoplay="true"]::-webkit-media-controls-panel,
+video[data-silent-autoplay="true"]::-webkit-media-controls-play-button,
+video[data-silent-autoplay="true"]::-webkit-media-controls-start-playback-button,
+video[data-silent-autoplay="true"]::-webkit-media-controls-overlay-play-button {
   display: none !important;
 }
