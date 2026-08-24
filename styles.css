@@ -1048,3 +1048,9 @@ body.framer-hero-offscreen .framer-hero iframe {
   background-color: transparent;
   transition: opacity 0.25s ease, background-color 0.25s ease;
 }
+
+/* Silent autoplay videos should not show native controls overlay. */
+video[data-silent-autoplay="true"]::-webkit-media-controls,
+video[data-silent-autoplay="true"]::-webkit-media-controls-enclosure {
+  display: none !important;
+}

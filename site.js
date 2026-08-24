@@ -142,11 +142,15 @@
 
   videos.forEach((video) => {
     const cleanSeekbar = video.dataset.cleanSeekbar === "true";
+    const silentAutoplay = video.dataset.silentAutoplay === "true";
 
     if (cleanSeekbar) {
       video.controls = false;
       video.removeAttribute("controls");
       attachCleanSeekbar(video);
+    } else if (silentAutoplay) {
+      video.controls = false;
+      video.removeAttribute("controls");
     } else {
       video.controls = true;
       video.setAttribute("controls", "");
@@ -156,7 +160,6 @@
     video.removeAttribute("autoplay");
     video.preload = "none";
 
-    const silentAutoplay = video.dataset.silentAutoplay === "true";
     const playOnView =
       video.dataset.playOnView === "true" ||
       video.dataset.autoplayOnView === "true" ||
