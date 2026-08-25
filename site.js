@@ -196,10 +196,24 @@
     video.controls = false;
     video.removeAttribute("controls");
     video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.setAttribute("x5-playsinline", "");
+    video.webkitPlaysInline = true;
     video.removeAttribute("autoplay");
     if (!lcpVideos.has(video)) {
       video.preload = "none";
     }
+
+    video.addEventListener(
+      "webkitbeginfullscreen",
+      (event) => {
+        event.preventDefault();
+        if (video.webkitExitFullscreen) {
+          video.webkitExitFullscreen();
+        }
+      },
+      true
+    );
 
     const playOnView =
       video.dataset.playOnView === "true" ||
@@ -214,6 +228,10 @@
     const showControlsAndPlay = () => {
       video.controls = true;
       video.setAttribute("controls", "");
+      video.muted = false;
+      video.defaultMuted = false;
+      video.volume = 1;
+      video.removeAttribute("muted");
       const playPromise = video.play();
       if (playPromise && playPromise.catch) {
         playPromise.catch(() => {});
@@ -232,15 +250,13 @@
     }
 
     audibleVideos.push(video);
-    video.muted = false;
-    video.defaultMuted = false;
+    video.muted = true;
+    video.defaultMuted = true;
     video.volume = 1;
-    video.removeAttribute("muted");
+    video.setAttribute("muted", "");
 
     video.addEventListener("play", () => {
       pauseOtherAudibleVideos(video);
-      video.muted = false;
-      video.volume = 1;
       applyAudioGain(video);
     });
   });
