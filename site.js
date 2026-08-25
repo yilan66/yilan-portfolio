@@ -50,6 +50,8 @@
   const videos = Array.from(document.querySelectorAll("video"));
   const audibleVideos = [];
   const viewTriggeredVideos = [];
+  const playingSilentVideos = new Set();
+  const MAX_SILENT_VIDEOS = isMobileDevice ? 2 : 4;
   let userInteracted = false;
   let audioContext;
   const boostedVideos = new WeakSet();
@@ -111,6 +113,35 @@
     audibleVideos.forEach((otherVideo) => {
       if (otherVideo !== currentVideo) {
         otherVideo.pause();
+      }
+    });
+  };
+
+  const syncSilentPlayback = () => {
+    const candidates = viewTriggeredVideos.filter(
+      (video) =>
+        video.dataset.silentAutoplay === "true" &&
+        video.dataset.silentShouldPlay === "true"
+    );
+
+    candidates.slice(MAX_SILENT_VIDEOS).forEach((video) => {
+      video.pause();
+      playingSilentVideos.delete(video);
+    });
+
+    candidates.slice(0, MAX_SILENT_VIDEOS).forEach((video) => {
+      if (playingSilentVideos.has(video)) {
+        return;
+      }
+      const playPromise = video.play();
+      if (playPromise && playPromise.then) {
+        playPromise
+          .then(() => {
+            playingSilentVideos.add(video);
+          })
+          .catch(() => {});
+      } else {
+        playingSilentVideos.add(video);
       }
     });
   };
@@ -209,10 +240,12 @@
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       videos.forEach((video) => video.pause());
+      playingSilentVideos.clear();
     }
   });
   window.addEventListener("pagehide", () => {
     videos.forEach((video) => video.pause());
+    playingSilentVideos.clear();
   });
 
   if (!("IntersectionObserver" in window)) {
@@ -232,7 +265,7 @@
       });
     },
     {
-      rootMargin: "700px 0px",
+      rootMargin: isMobileDevice ? "200px 0px" : "500px 0px",
       threshold: 0,
     }
   );
@@ -243,22 +276,28 @@
     return;
   }
 
+  const playThreshold = isMobileDevice ? 0.45 : 0.28;
   const playObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         const video = entry.target;
+        const shouldPlay =
+          entry.isIntersecting && entry.intersectionRatio >= playThreshold;
 
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.28) {
-          prepareVideo(video);
-
-          if (video.dataset.silentAutoplay === "true") {
-            video.muted = true;
-            video.defaultMuted = true;
-            video.setAttribute("muted", "");
-            video.play().catch(() => {});
-            return;
+        if (video.dataset.silentAutoplay === "true") {
+          video.dataset.silentShouldPlay = shouldPlay ? "true" : "false";
+          if (shouldPlay) {
+            prepareVideo(video);
+          } else {
+            video.pause();
+            playingSilentVideos.delete(video);
           }
+          syncSilentPlayback();
+          return;
+        }
 
+        if (shouldPlay) {
+          prepareVideo(video);
           pauseOtherAudibleVideos(video);
 
           const tryPlay = () => {
@@ -287,7 +326,7 @@
       });
     },
     {
-      threshold: [0, 0.28, 0.6],
+      threshold: isMobileDevice ? [0, 0.25, 0.45, 0.7] : [0, 0.28, 0.6],
     }
   );
 
