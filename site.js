@@ -62,59 +62,6 @@
   let audioContext;
   const boostedVideos = new WeakSet();
 
-  const attachCleanSeekbar = (video) => {
-    if (video.dataset.cleanSeekbarReady === "true" || !video.parentNode) {
-      return;
-    }
-
-    const wrap = document.createElement("div");
-    wrap.className = "clean-video-wrap";
-    video.parentNode.insertBefore(wrap, video);
-    wrap.appendChild(video);
-
-    const seek = document.createElement("input");
-    seek.type = "range";
-    seek.className = "clean-video-seek";
-    seek.min = "0";
-    seek.max = "1000";
-    seek.value = "0";
-    seek.tabIndex = -1;
-    seek.setAttribute("aria-label", "视频进度");
-    seek.setAttribute("aria-hidden", "true");
-    wrap.appendChild(seek);
-
-    let seeking = false;
-
-    const syncSeek = () => {
-      if (!seeking && Number.isFinite(video.duration) && video.duration > 0) {
-        seek.value = String((video.currentTime / video.duration) * 1000);
-      }
-    };
-
-    const jumpToSeekValue = () => {
-      if (Number.isFinite(video.duration) && video.duration > 0) {
-        video.currentTime = (Number(seek.value) / 1000) * video.duration;
-      }
-    };
-
-    video.addEventListener("timeupdate", syncSeek);
-    video.addEventListener("loadedmetadata", syncSeek);
-    seek.addEventListener("input", () => {
-      seeking = true;
-      jumpToSeekValue();
-    });
-    seek.addEventListener("change", () => {
-      seeking = false;
-      syncSeek();
-    });
-    seek.addEventListener("pointerup", () => {
-      seeking = false;
-      syncSeek();
-    });
-
-    video.dataset.cleanSeekbarReady = "true";
-  };
-
   const pauseOtherAudibleVideos = (currentVideo) => {
     audibleVideos.forEach((otherVideo) => {
       if (otherVideo !== currentVideo) {
@@ -244,21 +191,10 @@
   });
 
   videos.forEach((video) => {
-    const cleanSeekbar = video.dataset.cleanSeekbar === "true";
     const silentAutoplay = video.dataset.silentAutoplay === "true";
 
-    if (cleanSeekbar && !silentAutoplay) {
-      video.controls = false;
-      video.removeAttribute("controls");
-      attachCleanSeekbar(video);
-    } else if (silentAutoplay) {
-      video.controls = false;
-      video.removeAttribute("controls");
-    } else {
-      video.controls = true;
-      video.setAttribute("controls", "");
-    }
-
+    video.controls = false;
+    video.removeAttribute("controls");
     video.setAttribute("playsinline", "");
     video.removeAttribute("autoplay");
     if (!lcpVideos.has(video)) {
@@ -274,6 +210,17 @@
       viewTriggeredVideos.push(video);
       video.pause();
     }
+
+    const showControlsAndPlay = () => {
+      video.controls = true;
+      video.setAttribute("controls", "");
+      const playPromise = video.play();
+      if (playPromise && playPromise.catch) {
+        playPromise.catch(() => {});
+      }
+    };
+
+    video.addEventListener("click", showControlsAndPlay);
 
     if (silentAutoplay) {
       video.muted = true;
