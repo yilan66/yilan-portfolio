@@ -127,7 +127,7 @@
     }
   };
 
-  const MAX_CONCURRENT_LOADS = isMobileDevice ? 2 : 3;
+  const MAX_CONCURRENT_LOADS = isMobileDevice ? 1 : 3;
   const loadQueue = [];
   let loadingCount = 0;
 
@@ -289,7 +289,7 @@
       });
     },
     {
-      rootMargin: isMobileDevice ? "200px 0px" : "500px 0px",
+      rootMargin: isMobileDevice ? "0px 0px" : "300px 0px",
       threshold: 0,
     }
   );
