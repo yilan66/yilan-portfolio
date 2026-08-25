@@ -925,11 +925,11 @@ body.framer-hero-offscreen .framer-hero iframe {
   }
 
   .project-gallery.brand-book-gallery {
-    max-width: 100%;
+    max-width: 100% !important;
   }
 
   .project-gallery.brand-book-gallery > img:first-child {
-    max-width: 100%;
+    max-width: 100% !important;
   }
 
   .back-to-top {
