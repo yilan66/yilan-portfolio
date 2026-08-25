@@ -916,12 +916,18 @@ body.framer-hero-offscreen .framer-hero iframe {
 
   .fit-video-frame {
     max-width: 100%;
+    padding-top: 0;
+    background: transparent;
   }
 
   .project-gallery video.fit-screen-video {
-    width: auto;
-    max-width: min(72vw, 560px);
-    max-height: 82vh;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+  }
+
+  .project-gallery.brand-book-gallery {
+    max-width: 100%;
   }
 
   .back-to-top {
@@ -1047,8 +1053,9 @@ body.framer-hero-offscreen .framer-hero iframe {
   }
 
   .project-gallery video.fit-screen-video {
-    max-width: min(82vw, 420px);
-    max-height: 78vh;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
   }
 
   .back-to-top {
