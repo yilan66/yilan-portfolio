@@ -8,9 +8,16 @@ import sys
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 MAX_MOBILE_LONG_EDGE = 1200
-MOBILE_QUALITY = 82
+MOBILE_QUALITY = 75
 MIN_SIZE_TO_OPTIMIZE_BYTES = 200 * 1024  # 200 KB
-VERSION = "perf_mobile_img_1"
+VERSION = "perf_mobile_img_2"
+
+# For very tall images (long scrolling composites) reduce the long edge so
+# mobile bandwidth and decode cost stay reasonable.
+TALL_RATIO_THRESHOLD = 2.0
+TALL_LONG_EDGE = 800
+VERY_TALL_RATIO_THRESHOLD = 5.0
+VERY_TALL_LONG_EDGE = 600
 
 
 def run(cmd, check=True):
@@ -40,7 +47,14 @@ def generate_mobile_image(src, dst):
     width, height = get_image_dimensions(src)
     if width and height:
         long_edge = max(width, height)
-        scale = min(MAX_MOBILE_LONG_EDGE / long_edge, 1.0)
+        ratio = long_edge / min(width, height)
+        if ratio >= VERY_TALL_RATIO_THRESHOLD:
+            max_edge = VERY_TALL_LONG_EDGE
+        elif ratio >= TALL_RATIO_THRESHOLD:
+            max_edge = TALL_LONG_EDGE
+        else:
+            max_edge = MAX_MOBILE_LONG_EDGE
+        scale = min(max_edge / long_edge, 1.0)
         if scale < 1.0:
             new_long = int(long_edge * scale)
             resize_arg = f"{new_long}>"
