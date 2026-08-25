@@ -45,6 +45,12 @@
         video.src = video.dataset.mobileSrc;
       }
     });
+
+    document.querySelectorAll("img[data-mobile-src]").forEach((img) => {
+      if (img.dataset.mobileSrc) {
+        img.src = img.dataset.mobileSrc;
+      }
+    });
   }
 
   const videos = Array.from(document.querySelectorAll("video"));
