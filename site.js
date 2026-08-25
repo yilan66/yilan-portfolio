@@ -180,21 +180,74 @@
     }
   };
 
-  const prepareVideo = (video) => {
+  const MAX_CONCURRENT_LOADS = isMobileDevice ? 2 : 3;
+  const loadQueue = [];
+  let loadingCount = 0;
+
+  const processLoadQueue = () => {
+    while (loadingCount < MAX_CONCURRENT_LOADS && loadQueue.length > 0) {
+      const video = loadQueue.shift();
+      if (video.dataset.mediaReady === "true") {
+        continue;
+      }
+      loadingCount++;
+      video.dataset.mediaReady = "true";
+      video.preload = "metadata";
+
+      const onDone = () => {
+        loadingCount = Math.max(0, loadingCount - 1);
+        processLoadQueue();
+      };
+      video.addEventListener("loadeddata", onDone, { once: true });
+      video.addEventListener("error", onDone, { once: true });
+      video.load();
+    }
+  };
+
+  const queueVideoLoad = (video, highPriority = false) => {
     if (video.dataset.mediaReady === "true") {
       return;
     }
-
-    video.dataset.mediaReady = "true";
-    video.preload = "metadata";
-    video.load();
+    if (loadQueue.includes(video)) {
+      if (highPriority) {
+        loadQueue.splice(loadQueue.indexOf(video), 1);
+        loadQueue.unshift(video);
+      }
+      return;
+    }
+    if (highPriority) {
+      loadQueue.unshift(video);
+    } else {
+      loadQueue.push(video);
+    }
+    processLoadQueue();
   };
+
+  const prepareVideo = (video, highPriority = false) => {
+    queueVideoLoad(video, highPriority);
+  };
+
+  // Prioritize the first visible media in each project gallery (LCP).
+  const lcpVideos = new Set();
+  document.querySelectorAll(".project-gallery").forEach((gallery) => {
+    const firstMedia = gallery.querySelector("img, video");
+    if (!firstMedia) {
+      return;
+    }
+    firstMedia.setAttribute("loading", "eager");
+    firstMedia.setAttribute("fetchpriority", "high");
+    if (firstMedia.tagName === "VIDEO") {
+      firstMedia.dataset.lcpPriority = "true";
+      lcpVideos.add(firstMedia);
+      prepareVideo(firstMedia, true);
+    }
+  });
 
   videos.forEach((video) => {
     const cleanSeekbar = video.dataset.cleanSeekbar === "true";
     const silentAutoplay = video.dataset.silentAutoplay === "true";
 
-    if (cleanSeekbar) {
+    if (cleanSeekbar && !silentAutoplay) {
       video.controls = false;
       video.removeAttribute("controls");
       attachCleanSeekbar(video);
@@ -208,7 +261,9 @@
 
     video.setAttribute("playsinline", "");
     video.removeAttribute("autoplay");
-    video.preload = "none";
+    if (!lcpVideos.has(video)) {
+      video.preload = "none";
+    }
 
     const playOnView =
       video.dataset.playOnView === "true" ||
@@ -360,19 +415,6 @@
 })();
 
 (function () {
-  // Prioritize the first visible media in each project gallery (LCP).
-  document.querySelectorAll(".project-gallery").forEach((gallery) => {
-    const firstMedia = gallery.querySelector("img, video");
-    if (!firstMedia) {
-      return;
-    }
-    firstMedia.setAttribute("loading", "eager");
-    firstMedia.setAttribute("fetchpriority", "high");
-    if (firstMedia.tagName === "VIDEO") {
-      firstMedia.setAttribute("preload", "metadata");
-    }
-  });
-
   // Skeleton placeholder: fade in media once it finishes loading.
   const markLoaded = (media) => {
     media.classList.remove("is-loading");
