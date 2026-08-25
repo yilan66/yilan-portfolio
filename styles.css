@@ -924,6 +924,14 @@ body.framer-hero-offscreen .framer-hero iframe {
     max-height: 82vh;
   }
 
+  .project-gallery.brand-book-gallery {
+    max-width: 100%;
+  }
+
+  .project-gallery.brand-book-gallery > img:first-child {
+    max-width: 100%;
+  }
+
   .back-to-top {
     margin-top: 1.2rem;
     margin-bottom: 3rem;
