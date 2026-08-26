@@ -403,16 +403,4 @@
       video.addEventListener("error", () => markLoaded(video), { once: true });
     }
   });
-
-  const scrollHint = document.querySelector(".hero-scroll-hint");
-  if (scrollHint) {
-    scrollHint.addEventListener("click", (event) => {
-      event.preventDefault();
-      const targetId = isMobileDevice ? "work-mobile" : "work";
-      const target = document.getElementById(targetId);
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    });
-  }
 })();
